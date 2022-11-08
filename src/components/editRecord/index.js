@@ -1,28 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function Home() {
-  const [name, setName] = useState("");
-  const [designation, setDesignation] = useState("");
+export default function EditRecord() {
+  const location = useLocation();
+  let navigate = useNavigate();
+
+  const [name, setName] = useState(location?.state?.name);
+  const [designation, setDesignation] = useState(location?.state?.designation);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (name?.length > 0 && designation?.length > 0) {
-      addData();
-    } else {
-      Error();
-    }
+    editData();
   };
 
-  const addData = () => {
-    let url = "http://localhost:4000/create";
+  const editData = async () => {
+    let id = location?.state?.id;
+    let url = "http://localhost:4000/update/" + id;
     let headers = {
       "content-type": "application/json",
     };
@@ -31,14 +30,11 @@ export default function Home() {
       name: name,
       designation: designation,
     };
-    axios.post(url, params, headers).then((response) => {
+    axios.put(url, params, headers).then((response) => {
       console.log("rsp", response);
-      notify();
+      navigate("/all-records");
     });
   };
-
-  const Error = () => toast("Please Insert data");
-  const notify = () => toast("Data Added");
 
   return (
     <div style={{ marginTop: "5%" }}>
@@ -58,6 +54,7 @@ export default function Home() {
                   onChange={(e) => {
                     setName(e?.target?.value);
                   }}
+                  defaultValue={location?.state?.name}
                 />
               </Form.Group>
               <Form.Group
@@ -71,14 +68,21 @@ export default function Home() {
                   onChange={(e) => {
                     setDesignation(e?.target?.value);
                   }}
+                  defaultValue={location?.state?.designation}
                 />
               </Form.Group>
 
               <div className="d-grid gap-2">
                 <Button type="submit" variant="primary" size="lg">
-                  Add
+                  Edit
                 </Button>
-                <Button variant="danger" size="lg" onClick={() => {}}>
+                <Button
+                  variant="danger"
+                  size="lg"
+                  onClick={() => {
+                    navigate("/all-records");
+                  }}
+                >
                   Cancel
                 </Button>
               </div>
@@ -86,7 +90,6 @@ export default function Home() {
           </Col>
           <Col lg={4}></Col>
         </Row>
-        <ToastContainer />
       </Container>
     </div>
   );
